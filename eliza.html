@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Eliza</title>
+<style>
+    body {
+      font-family: 'Courier New', Courier, monospace;
+      background-color: #000;
+      color: #0F0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      height: 100vh;
+      margin: 0;
+    }
+    input, button {
+      font-family: 'Courier New', Courier, monospace;
+      background-color: #222;
+      border: 1px solid #0F0;
+      color: #0F0;
+      padding: 10px;
+      margin: 5px;
+      width: 200px;
+      box-sizing: border-box;
+    }
+    button {
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #333;
+    }
+    #responseContainer {
+      border: 1px solid #0F0;
+      padding: 10px;
+      width: 200px;
+      text-align: center;
+      margin-top: 10px;
+    }
+  </style>
+  
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    let lastResponse = null; // Variable to store the last response
+
+    const responseContainer = document.getElementById("responseContainer");
+    const toggleButton = document.getElementById("toggleResponse");
+    const repeatButton = document.getElementById("repeatCommand");
+
+    document.getElementById("submitCommand").addEventListener("click", function() {
+        const command = document.getElementById("commandInput").value;
+        fetch("http://localhost:8080/send-command", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ command: command }),
+        })
+        .then(response => response.json())
+        .then(data => {
+            lastResponse = data.wordToArduino; // Store the last response
+            responseContainer.innerText = data.wordToArduino; // Assuming 'message' is part of your response
+            // responseContainer.style.display = "block";
+        })
+        .catch(error => console.error("Error:", error));
+    });
+
+    toggleButton.addEventListener("click", function() {
+        if (responseContainer.style.display === "none") {
+            responseContainer.style.display = "block";
+            toggleResponse.innerText = "Hide response";
+        } else {
+            responseContainer.style.display = "none";
+            toggleResponse.innerText = "Show response";
+        }
+    });
+
+    repeatButton.addEventListener("click", function() {
+        if (lastResponse) {
+            const repeatRequestData = {command:lastResponse, repeat: true}; // Add `repeat: true` to the request body
+
+            fetch("http://localhost:8080/send-command", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(repeatRequestData) // Send the last response
+            })
+            .then(response => response.json())
+            .then(data => {
+                responseContainer.innerText = data.wordToArduino; // Update the response
+                if (responseContainer.style.display === "none") {
+                    responseContainer.style.display = "block";
+                }
+            })
+            .catch(error => console.error("Error:", error));
+        } else {
+            console.error("No last response to repeat.");
+        }
+    });
+});
+</script>
+</head>
+<body>
+    <input type="text" id="commandInput" placeholder="Enter command">
+    <button id="submitCommand">Submit</button>
+    <button id="toggleResponse">Show response</button>
+    <button id="repeatCommand">Repeat</button>
+    <div id="responseContainer" style="display: none;">Response will appear here</div>
+</body>
+</html>

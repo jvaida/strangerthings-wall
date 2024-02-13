@@ -7,6 +7,9 @@ const fs = require('fs');
 const app = express();
 const port = 8080;
 
+const cors = require('cors');
+app.use(cors());
+
 // Replace '/dev/ttyACM0' with your Arduino's serial port
 const arduinoPort = new SerialPort({path: '/dev/tty.usbmodem101', baudRate: 9600 });
 const parser = arduinoPort.pipe(new ReadlineParser({ delimiter: '\n' }));
@@ -22,30 +25,25 @@ app.use(express.urlencoded({ extended: true }));
 // Routes
 app.post('/send-command', (req, res) => {
     
-    const { command } = req.body;
+    const { command,repeat } = req.body;
     if (command) {
-        console.log(`Sending command to Arduino: ${command}`);
-        arduinoPort.write(`${command}\n`, (err) => {
-            if (err) {
-                return res.status(500).send('Failed to send command to Arduino');
+        console.log(`Command received: ${command}`);
+            let wordToArduino = command;
+            if(!repeat){
+                // Generate chatbot response
+                let keywords = dictionary.getKeywords(command);
+                wordToArduino = dictionary.getAnswer(keywords).toUpperCase();
             }
+            res.send({ message: 'Command sent to Arduino successfully', wordToArduino });
 
-            // Generate chatbot response
-            let keywords = dictionary.getKeywords(command);
-            let chatResponse = dictionary.getAnswer(keywords);
-            res.send({ message: 'Command sent to Arduino successfully', chatResponse });
+            console.log(`Sending chat response to Arduino: ${wordToArduino}`);
+            arduinoPort.write(`${wordToArduino}\n`, (err) => {
+                if (err) {
+                    console.error('Error sending chat response to Arduino:', err);
+                }
+            });
 
-            setTimeout(() => {
-                console.log(`Sending chat response to Arduino: ${chatResponse}`);
-                arduinoPort.write(`${chatResponse}\n`, (err) => {
-                    if (err) {
-                        console.error('Error sending chat response to Arduino:', err);
-                    }
-                });
-            }, 5000); 
 
-            
-        });
     } else {
         res.status(400).send('No command provided');
     }
