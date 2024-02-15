@@ -1,4 +1,4 @@
-#Instructions to run
+# Instructions to run
 1) Connect the machine to arduino. (Make sure you've uploaded the arduino code already.)
 2) Start the server:
 `node server`
