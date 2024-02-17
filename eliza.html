@@ -16,21 +16,34 @@
       height: 100vh;
       margin: 0;
     }
+    nav {
+      position: absolute;
+      top: 0;
+      width: 100%;
+      background-color: #222;
+      padding: 10px 0;
+      display: flex;
+      justify-content: center; /* Center navbar content */
+    }
+    nav a {
+      color: #0F0;
+      margin: 0 10px; /* Adjust spacing between links */
+      text-decoration: none;
+      padding: 10px;
+    }
     input, button {
-      font-family: 'Courier New', Courier, monospace;
       background-color: #222;
       border: 1px solid #0F0;
       color: #0F0;
       padding: 10px;
-      margin: 5px;
+      margin: 5px 0; /* Adjusted for vertical spacing */
       width: 250px;
       box-sizing: border-box;
-      display: none; /* Initially hide all input and buttons except the start conversation button */
     }
     #startConversation {
-      display: block; /* Only the start conversation button is visible initially */
+      display: block;
     }
-    button:hover {
+    button:hover, nav a:hover {
       background-color: #333;
     }
     #responseContainer, #initialQuestionContainer {
@@ -124,6 +137,10 @@ document.addEventListener("DOMContentLoaded", function() {
 </script>
 </head>
 <body>
+    <nav>
+        <a href="https://example.com/promo1" target="_blank">Promo 1</a>
+        <a href="https://example.com/promo2" target="_blank">Promo 2</a>
+    </nav>
     <button id="startConversation">Start Conversation</button>
     <input type="text" id="commandInput" placeholder="Enter your response">
     <button id="submitCommand">Submit</button>
