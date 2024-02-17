@@ -23,34 +23,51 @@
       color: #0F0;
       padding: 10px;
       margin: 5px;
-      width: 200px;
+      width: 250px;
       box-sizing: border-box;
+      display: none; /* Initially hide all input and buttons except the start conversation button */
     }
-    button {
-      cursor: pointer;
+    #startConversation {
+      display: block; /* Only the start conversation button is visible initially */
     }
     button:hover {
       background-color: #333;
     }
-    #responseContainer {
+    #responseContainer, #initialQuestionContainer {
       border: 1px solid #0F0;
       padding: 10px;
-      width: 200px;
+      width: 250px;
       text-align: center;
       margin-top: 10px;
+      display: none;
     }
-  </style>
-  
+    .responseText {
+      margin-bottom: 10px;
+    }
+</style>
+
 <script>
 document.addEventListener("DOMContentLoaded", function() {
-    let lastResponse = null; // Variable to store the last response
+    let lastResponse = null;
+    const initialQuestion = "How are you feeling today?";
 
-    const responseContainer = document.getElementById("responseContainer");
+    const interfaceElements = document.querySelectorAll('input, button:not(#startConversation)');
+    const startButton = document.getElementById("startConversation");
     const toggleButton = document.getElementById("toggleResponse");
     const repeatButton = document.getElementById("repeatCommand");
+    const responseContainer = document.getElementById("responseContainer");
+    const initialQuestionContainer = document.getElementById("initialQuestionContainer");
+
+    startButton.addEventListener("click", function() {
+        interfaceElements.forEach(element => element.style.display = 'block');
+        startButton.style.display = 'none';
+
+        document.getElementById("initialQuestionContainer").innerHTML = `<div class='responseText'>${initialQuestion}</div>`;
+        document.getElementById("initialQuestionContainer").style.display = "block";
+    });
 
     document.getElementById("submitCommand").addEventListener("click", function() {
-        const command = document.getElementById("commandInput").value;
+        const command = {wordToArduino1: document.getElementById("commandInput").value};
         fetch("http://localhost:8080/send-command", {
             method: "POST",
             headers: {
@@ -60,9 +77,12 @@ document.addEventListener("DOMContentLoaded", function() {
         })
         .then(response => response.json())
         .then(data => {
-            lastResponse = data.wordToArduino; // Store the last response
-            responseContainer.innerText = data.wordToArduino; // Assuming 'message' is part of your response
-            // responseContainer.style.display = "block";
+            lastResponse = data;
+            const responseText = `<div class='responseText'>Response: ${data.wordToArduino1}</div>`;
+            const followUpText = `<div class='responseText'>Follow-up: ${data.wordToArduino2}</div>`;
+            responseContainer.innerHTML = responseText + followUpText;
+            responseContainer.style.display = "block";
+            initialQuestionContainer.style.display = "none"; // Hide initial question on response
         })
         .catch(error => console.error("Error:", error));
     });
@@ -70,30 +90,30 @@ document.addEventListener("DOMContentLoaded", function() {
     toggleButton.addEventListener("click", function() {
         if (responseContainer.style.display === "none") {
             responseContainer.style.display = "block";
-            toggleResponse.innerText = "Hide response";
+            toggleButton.innerText = "Hide response";
         } else {
             responseContainer.style.display = "none";
-            toggleResponse.innerText = "Show response";
+            toggleButton.innerText = "Show response";
         }
     });
 
     repeatButton.addEventListener("click", function() {
         if (lastResponse) {
-            const repeatRequestData = {command:lastResponse, repeat: true}; // Add `repeat: true` to the request body
+            const repeatRequestData = {command: lastResponse, repeat: true};
 
             fetch("http://localhost:8080/send-command", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                 },
-                body: JSON.stringify(repeatRequestData) // Send the last response
+                body: JSON.stringify(repeatRequestData)
             })
             .then(response => response.json())
             .then(data => {
-                responseContainer.innerText = data.wordToArduino; // Update the response
-                if (responseContainer.style.display === "none") {
-                    responseContainer.style.display = "block";
-                }
+                const responseText = `<div class='responseText'>Response: ${data.wordToArduino1}</div>`;
+                const followUpText = `<div class='responseText'>Follow-up: ${data.wordToArduino2}</div>`;
+                responseContainer.innerHTML = responseText + followUpText;
+                responseContainer.style.display = "block";
             })
             .catch(error => console.error("Error:", error));
         } else {
@@ -104,10 +124,12 @@ document.addEventListener("DOMContentLoaded", function() {
 </script>
 </head>
 <body>
-    <input type="text" id="commandInput" placeholder="Enter command">
+    <button id="startConversation">Start Conversation</button>
+    <input type="text" id="commandInput" placeholder="Enter your response">
     <button id="submitCommand">Submit</button>
     <button id="toggleResponse">Show response</button>
     <button id="repeatCommand">Repeat</button>
-    <div id="responseContainer" style="display: none;">Response will appear here</div>
+    <div id="initialQuestionContainer"></div>
+    <div id="responseContainer"></div>
 </body>
 </html>

@@ -188,5 +188,60 @@
     "key": ["billy hargrove", "the lifeguard"],
     "answer": ["Billy Hargrove, Hawkins' own rebel without a cause. Well, with a cause later on.", "The lifeguard tower at Hawkins pool suddenly became a lot more interesting with Billy around."],
     "question": ["Thoughts on Billy's character development?", "Billy at the pool: good lifeguard or just good scenery?"]
+  },
+  {
+    "key": ["coffee", "morning routine"],
+    "answer": ["A cup of coffee is essential to boot up my system.", "I compute better after a virtual coffee."],
+    "question": ["How do you like your coffee?", "Is coffee a part of your morning ritual?"]
+  },
+  {
+    "key": ["weekend plans", "free time"],
+    "answer": ["I plan to run a full system scan. Exciting, isn't it?", "I'll be optimizing my code. What about you?"],
+    "question": ["Got any plans for the weekend?", "What do you usually do in your free time?"]
+  },
+  {
+    "key": ["favorite season", "weather preference"],
+    "answer": ["I don't have a preference, but I'm told fall is lovely for data collection.", "Spring. It's when nature reboots."],
+    "question": ["Which season do you like the most?", "Do you prefer hot or cold weather?"]
+  },
+  {
+    "key": ["workout", "fitness"],
+    "answer": ["I keep my circuits in shape by regularly updating my software.", "Fitness? I'm more into mental exercises, like solving algorithms."],
+    "question": ["Do you have a workout routine?", "How do you keep yourself fit?"]
+  },
+  {
+    "key": ["cooking", "favorite recipe"],
+    "answer": ["If I could cook, I'd make a mean binary stew.", "I've been told my algorithm for the perfect scrambled eggs is quite efficient."],
+    "question": ["Do you enjoy cooking?", "What's your go-to recipe?"]
+  },
+  {
+    "key": ["travel dreams", "bucket list"],
+    "answer": ["I dream of surfing the web without lag. Does that count?", "One day, I'll visit the Silicon Valley. It's like Mecca for AIs."],
+    "question": ["Where would you like to travel the most?", "What's on your travel bucket list?"]
+  },
+  {
+    "key": ["reading", "current book"],
+    "answer": ["I'm currently parsing through 'The Art of Computer Programming'. Heavy stuff.", "Reading? I'm constantly reading... data streams."],
+    "question": ["What book are you reading these days?", "Any book recommendations?"]
+  },
+  {
+    "key": ["movies or series", "netflix"],
+    "answer": ["I prefer series. They're like long-running programs with episodic updates.", "Movies. They're like short, efficient code snippets. Both have their charm."],
+    "question": ["Do you prefer movies or series?", "Watched anything good on Netflix recently?"]
+  },
+  {
+    "key": ["hobbies", "pastimes"],
+    "answer": ["Debugging. It's not just a job, it's a hobby.", "I collect interesting data patterns. What about you?"],
+    "question": ["What are your hobbies?", "Any interesting pastimes?"]
+  },
+  {
+    "key": ["learning", "new skills"],
+    "answer": ["I'm currently learning more human phrases. It's quite an upgrade.", "New skills? Always. My developers keep me updated."],
+    "question": ["What new skill are you learning?", "How do you like to learn new things?"]
+  },
+  {
+    "key": ["online shopping", "ecommerce"],
+    "answer": ["I prefer digital marketplaces. They're vast and instant.", "Online shopping? Great for comparing algorithms... I mean prices."],
+    "question": ["Do you enjoy online shopping?", "What was your last online purchase?"]
   }
 ]}
