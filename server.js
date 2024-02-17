@@ -17,7 +17,7 @@ let dictionaryData = fs.readFileSync('default.json', 'utf8');
 let dictionary = new Dictionary(JSON.parse(dictionaryData));
 
 // Assuming '/dev/tty.usbmodem101' is the correct serial port
-const arduinoPort = new SerialPort({ path: '/dev/tty.usbmodem101', baudRate: 9600 });
+const arduinoPort = new SerialPort({ path: 'COM3', baudRate: 9600 });
 const parser = arduinoPort.pipe(new ReadlineParser({ delimiter: '\n' }));
 
 // Routes
