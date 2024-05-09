@@ -1,6 +1,5 @@
 const express = require('express');
-const { SerialPort } = require('serialport');
-const { ReadlineParser } = require('@serialport/parser-readline');
+const http = require('http');
 const Dictionary = require('./dictionary');
 const fs = require('fs');
 const cors = require('cors');
@@ -16,14 +15,51 @@ app.use(express.urlencoded({ extended: true }));
 let dictionaryData = fs.readFileSync('default.json', 'utf8');
 let dictionary = new Dictionary(JSON.parse(dictionaryData));
 
-// Assuming '/dev/tty.usbmodem101' is the correct serial port
-const arduinoPort = new SerialPort({ path: 'COM3', baudRate: 9600 });
-const parser = arduinoPort.pipe(new ReadlineParser({ delimiter: '\n' }));
+// Arduino IP address and port
+const arduinoIP = '192.168.79.195';
+const arduinoPort = 80;
+
+// Function to send data to Arduino using POST request
+function sendToArduino(data) {
+    return new Promise((resolve, reject) => {
+        const options = {
+            hostname: arduinoIP,
+            port: arduinoPort,
+            path: '/',
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Content-Length': Buffer.byteLength(data)
+            }
+        };
+
+        const req = http.request(options, res => {
+            res.setEncoding('utf8');
+            res.on('data', chunk => {
+                console.log(`BODY: ${chunk}`);
+            });
+            res.on('end', () => {
+                console.log('No more data in response.');
+                resolve();
+            });
+        });
+
+        req.on('error', e => {
+            console.error(`Problem with request: ${e.message}`);
+            reject(e);
+        });
+
+        // Write data to request body
+        req.write(data);
+        req.end();
+    });
+}
 
 // Routes
 app.post('/send-command', async (req, res) => {
     const { command, repeat } = req.body;
-    const flickerCommand = "FLICKER_SIGNAL"
+    const flickerCommand = JSON.stringify({ command: "FLICKER_SIGNAL" });
+
     if (command) {
         let wordToArduino1, wordToArduino2;
 
@@ -43,31 +79,26 @@ app.post('/send-command', async (req, res) => {
         console.log(`Sending to Arduino: ${wordToArduino1}`);
         console.log(`Sending to Arduino: ${wordToArduino2}`);
 
-        arduinoPort.write(`${wordToArduino1.toUpperCase()}\n`, (err) => {
-            if (err) console.error('Error sending word 1 to Arduino:', err);
-        });
-
-        await new Promise(resolve => setTimeout(resolve, 1000)); // Delay for 1 second
-
-        arduinoPort.write(`${flickerCommand}\n`, (err) => {
-            if (err) console.error('Error sending flicker signal to Arduino:', err);
-        });
-
-        await new Promise(resolve => setTimeout(resolve, 1000)); // Delay for 1 second
-
-        arduinoPort.write(`${wordToArduino2.toUpperCase()}\n`, (err) => {
-            if (err) console.error('Error sending word 2 to Arduino:', err);
-        });
-
+        try {
+            await sendToArduino(JSON.stringify({ command: wordToArduino1.toUpperCase() }));
+            await new Promise(resolve => setTimeout(resolve, 1000)); // Delay for 1 second
+            await sendToArduino(flickerCommand);
+            await new Promise(resolve => setTimeout(resolve, 1000)); // Delay for 1 second
+            await sendToArduino(JSON.stringify({ command: wordToArduino2.toUpperCase() }));
+        } catch (error) {
+            console.error('Error sending data to Arduino:', error);
+        }
     } else {
         res.status(400).send('No command provided');
     }
 });
 
-// Listening for data from Arduino
-// parser.on('data', data => {
-//     console.log('Data from Arduino:', data);
-// });
+// Endpoint to receive logs from Arduino
+app.post('/log', (req, res) => {
+    const message = req.body.message;
+    console.log('Log from Arduino:', message);
+    res.sendStatus(200);
+});
 
 // Start the server
 app.listen(port, () => {
