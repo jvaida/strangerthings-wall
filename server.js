@@ -1,8 +1,9 @@
 const express = require('express');
 const http = require('http');
-const Dictionary = require('./dictionary');
 const fs = require('fs');
 const cors = require('cors');
+const { OpenAI } = require('openai');
+require('dotenv').config();
 
 const app = express();
 const port = 8080;
@@ -11,13 +12,14 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Load the chatbot dictionary
-let dictionaryData = fs.readFileSync('default.json', 'utf8');
-let dictionary = new Dictionary(JSON.parse(dictionaryData));
-
 // Arduino IP address and port
-const arduinoIP = '192.168.2.100'; //192.168.79.195
+const arduinoIP = '192.168.2.100'; // Replace with your Arduino IP address
 const arduinoPort = 80;
+
+// OpenAI API setup
+const openai = new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY,
+});
 
 // Function to send data to Arduino using POST request
 function sendToArduino(data) {
@@ -36,7 +38,6 @@ function sendToArduino(data) {
         const req = http.request(options, res => {
             let responseData = '';
             res.setEncoding('utf8');
-            
             res.on('data', chunk => {
                 console.log(`Response from Arduino: ${chunk}`);
                 responseData += chunk;
@@ -56,12 +57,22 @@ function sendToArduino(data) {
         // Write data to request body
         console.log(`Sending data to Arduino: ${data}`);
         req.write(data);
-        req.end(() => {
-            console.log('Request ended.');
-        });
+        req.end();
     });
 }
 
+// Function to process input using OpenAI API
+async function processInput(input) {
+    const response = await openai.completions.create({
+        model: 'gpt-3.5-turbo', // or 'gpt-3.5-turbo' or 'gpt-4' if you have access
+        prompt: input,
+        max_tokens: 50,
+    });
+
+    const data = response.data;
+    console.log(data);  // Log the response to inspect its structure
+    return data.choices[0].text.trim();  // Extract and return the generated text
+}
 
 // Routes
 app.post('/send-command', async (req, res) => {
@@ -76,10 +87,18 @@ app.post('/send-command', async (req, res) => {
             wordToArduino1 = command.wordToArduino1;
             wordToArduino2 = command.wordToArduino2;
         } else {
-            // Generate new responses from the dictionary
-            let keywords = dictionary.getKeywords(command.wordToArduino1);
-            wordToArduino1 = dictionary.getAnswer(keywords).toUpperCase();
-            wordToArduino2 = dictionary.getQuestion(keywords).toUpperCase();
+            // Generate new responses using AI processing
+            try {
+                const aiResponse = await processInput(command.wordToArduino1);
+                console.log(aiResponse); // Log the response to inspect the structure
+
+                wordToArduino1 = aiResponse || 'DEFAULT_RESPONSE_1';
+                wordToArduino2 = 'DEFAULT_RESPONSE_2'; // You can modify this as needed
+            } catch (error) {
+                console.error('Error processing input with AI:', error);
+                res.status(500).send('Error processing input with AI');
+                return;
+            }
         }
 
         res.send({ wordToArduino1, wordToArduino2 });
